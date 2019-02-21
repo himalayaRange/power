@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:reg="http://www.dangdang.com/schema/ddframe/reg"
+    xmlns:job="http://www.dangdang.com/schema/ddframe/job"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.dangdang.com/schema/ddframe/reg
+                        http://www.dangdang.com/schema/ddframe/reg/reg.xsd
+                        http://www.dangdang.com/schema/ddframe/job
+                        http://www.dangdang.com/schema/ddframe/job/job.xsd
+                        ">
+    <!-- 配置注册中心 -->                    
+    <reg:zookeeper id = "regCenter" server-lists = "192.168.0.60:2181" namespace = "ymy-job" 
+    	base-sleep-time-milliseconds="1000" max-sleep-time-milliseconds="3000" max-retries="3"
+    /> 
+       
+    <!-- 配置作业 
+    	作业分片的策略：job-sharding-strategy-class
+    	1.基于平均算法策略 ： 默认分片策略
+    	2.根据作业名的哈希值的奇偶数决定ip升降序 ：不同的作业平均分配到不同的服务器
+    	3.根据作业名的哈希值对服务器列表进行轮转的分片策略：
+    	4.自定义：implements JobShardingStrategy
+    -->
+    <job:simple id="demoSimple" class="com.bly.common.schedule.elastic.job.MyElasticJob" registry-center-ref="regCenter" cron="0/10 * * * * ?" sharding-total-count="3" sharding-item-parameters="0=A,1=B,2=C" 
+    	job-sharding-strategy-class="com.dangdang.ddframe.job.lite.api.strategy.impl.AverageAllocationJobShardingStrategy"
+    />                 
+	
+</beans>                        

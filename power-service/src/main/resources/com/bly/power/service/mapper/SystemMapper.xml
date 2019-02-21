@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bly.power.service.mapper.SystemMapper">
+
+	<sql id="table_name">
+		t_sys_system
+	</sql>
+	<sql id="table_link_name">
+		t_sys_system s
+		LEFT JOIN t_power_user sc
+		ON s.creator = sc.id
+		LEFT JOIN t_power_user su
+		ON s.updater = su.id
+	</sql>
+	<sql id="table_order">
+		<choose>
+			<when test="order !=null and sort !=null">
+				ORDER BY ${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY id DESC
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="table_page">
+		<if test="rowStart !=null  and  rowEnd !=null ">
+			<![CDATA[LIMIT #{rowStart},#{rowEnd}]]>
+		</if>
+	</sql>
+	<sql id="where_condition">
+		WHERE s.isDeleted=0
+		<if test="id !=null">
+			<![CDATA[ AND s.id =#{id}]]>
+		</if>
+		<if test="sysCode !=null and  sysCode !=''">			
+			<![CDATA[ AND s.sysCode LIKE CONCAT('%',#{sysCode},'%')]]>
+		</if>
+		<if test="sysName !=null and  sysName !=''">			
+			<![CDATA[ AND s.sysName LIKE CONCAT('%',#{sysName},'%')]]>
+		</if>
+	</sql>
+
+	<select id="count" resultType="long" parameterType="map">
+		SELECT COUNT(s.id)
+		FROM
+		<include refid="table_link_name" />
+		<include refid="where_condition" />
+	</select>
+
+	<select id="select" resultType="com.bly.power.interfaces.entity.power.SystemEntity">
+		SELECT s.id,s.sysCode,s.sysName,s.isDeleted,
+		 s.createTime, s.creator, s.updateTime, s.updater,s.status,
+		 sc.realName AS createrName , su.realName AS updaterName
+		FROM
+		<include refid="table_link_name" />
+		<include refid="where_condition" />
+		<include refid="table_order" />
+		<include refid="table_page" />
+	</select>
+
+	<insert id="insert" parameterType="com.bly.power.interfaces.entity.power.SystemEntity">
+		INSERT INTO
+		<include refid="table_name" />
+		(sysCode,sysName,remark,status,
+		isDeleted, createTime, creator, updateTime,updater)
+		VALUES(#{sysCode},#{sysName},#{remark},#{status},
+		0,now(),#{creator},now(),#{updater})
+	</insert>
+
+	<update id="update" parameterType="com.bly.power.interfaces.entity.power.SystemEntity">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now()
+		<if test="sysCode !=null and  sysCode !=''">
+				<![CDATA[, sysCode=#{sysCode}]]>
+		</if>
+		<if test="sysName !=null and  sysName !=''">
+				<![CDATA[, sysName=#{sysName}]]>
+		</if>
+		<if test="remark !=null and  remark !=''">
+				<![CDATA[, remark=#{remark}]]>
+		</if>
+		<if test="status !=null and  status !=''">
+				<![CDATA[, status=#{status}]]>
+		</if>
+		<if test="creator !=null">
+				<![CDATA[, creator=#{creator}]]>
+		</if>
+		<if test="updater !=null">
+				<![CDATA[, updater=#{updater}]]>
+		</if>
+		WHERE id=#{id}
+	</update>
+
+	<update id="delete" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id}
+	</update>
+
+	<update id="deleteById" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id} and status=1
+	</update>
+	
+	<update id="enableOrFreeze">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),status=#{status}
+		WHERE id=#{id}
+	</update>
+	
+	<select id="find" resultType="com.bly.power.interfaces.entity.power.SystemEntity"
+		parameterType="long">
+		SELECT s.id,s.sysCode,s.sysName,s.isDeleted,
+		 s.createTime, s.creator, s.updateTime, s.updater,s.status,
+		 sc.realName AS createrName , su.realName AS updaterName
+		FROM
+		<include refid="table_link_name" />
+		WHERE s.id=#{id}
+	</select>
+
+</mapper>

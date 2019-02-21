@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bly.power.service.mapper.RestMapper" >
+	<!-- 
+	<select id="getSystemMenuPermissions" resultType="">
+		SELECT
+		su.id AS userId ,su.userName,su.realName,su.phone ,sur.roleId,su.`status` AS
+		userStatus , su.isDeleted AS userIsDeleted,
+		detail.roleCode , detail.roleName,detail.sysId , detail.roleStatus ,
+		detail.roleIsDeleted, detail.sysId , detail.sysCode ,
+		detail.sysName ,detail.systemStatus ,detail.systemIsDeleted, detail.menuId ,
+		detail.columnId,detail.colCode,
+		detail.colName,detail.`describe` ,detail.columnStatus ,detail.columnIsDeleted
+		FROM t_sys_user su
+		LEFT JOIN t_sys_userrole sur
+		ON su.id = sur.userId
+		LEFT JOIN
+		(SELECT
+		sr.id AS roleId ,sr. roleCode , sr.roleName,sr.`status` AS roleStatus
+		,sr.isDeleted AS roleIsDeleted,
+		sr.sysId,ss.sysCode ,ss.sysName ,ss.`status` AS systemStatus , ss.isDeleted AS
+		systemIsDeleted, srm.menuId,srmc.columnId,
+		smc.colCode ,smc.colName ,smc.`describe`,smc.`status` AS columnStatus ,
+		smc.isDeleted AS columnIsDeleted
+		FROM t_sys_role sr
+		LEFT JOIN t_sys_system ss
+		ON sr.sysId = ss.id
+		LEFT JOIN t_sys_rolemenu srm
+		ON sr.id = srm.roleId
+		LEFT JOIN t_sys_rolemenucolumn srmc
+		ON srm.id = srmc.roleMenuId
+		LEFT JOIN t_sys_menucolumn smc
+		ON smc.id = srmc.columnId
+		where sr.`status` = 0 AND sr.isDeleted = 0
+		AND ss.`status` = 0 AND ss.isDeleted = 0
+		AND smc.`status` = 0 AND smc.isDeleted = 0 )detail
+		ON sur.roleId = detail.roleId
+		WHERE su.`status` = 0 AND su.isDeleted = 0
+		<if test="userName!=null and userName!=''">
+			AND su.userName = #{userName ,jdbcType=VARCHAR}
+		</if>
+		<if test="sysCode!=null and sysCode!=''">
+			detail.sysCode = #{sysCode,jdbcType = VARCHAR}
+		</if>
+	</select>
+	 -->
+	
+	<resultMap  id="baseResourcesMap" type="com.bly.power.interfaces.entity.rest.MenuRoot">
+		<id property="roleId"  column="roleId"/>
+		<result property="roleCode" column="roleCode"/>
+		<result property="roleName" column="roleName"/>
+		<result property="roleStatus" column="roleStatus"/>
+		<result property="roleIsDeleted" column="roleIsDeleted"/>
+		<result property="sysId" column="sysId"/>
+		<result property="sysCode" column="sysCode"/>
+		<result property="sysName" column="sysName"/>
+		<result property="systemStatus" column="systemStatus"/>
+		<result property="systemIsDeleted" column="systemIsDeleted"/>
+		<!-- collection 映射角色和菜单一对多关系 -->		
+		<collection property="roleMenus" ofType="com.bly.power.interfaces.entity.rest.RoleMenuRoot">
+			<id column="menuId" property="menuId" jdbcType="BIGINT" />
+		    <result column="menuCode" property="menuCode" jdbcType="VARCHAR" />
+		    <result column="menuName" property="menuName" jdbcType="VARCHAR" />
+		    <result column="url" property="url" jdbcType="VARCHAR" />
+		    <result column="parentId" property="parentId" jdbcType="BIGINT" />
+		    <result column="menuType" property="menuType" jdbcType="TINYINT" />
+		    <result column="menuSort" property="menuSort" jdbcType="INTEGER" />
+		    <result column="menuStatus" property="menuStatus" jdbcType="INTEGER" />
+		    <result column="menuIsDeleted" property="menuIsDeleted" jdbcType="INTEGER" />
+		    <!-- collection 映射菜单和菜单功能表一对多关系 -->
+		    <collection property="columns" ofType="com.bly.power.interfaces.entity.rest.MenuColumnRoot">
+		    	<id column="columnId" property="columnId" jdbcType="BIGINT" />
+			    <result column="colCode" property="colCode" jdbcType="VARCHAR" />
+			    <result column="colName" property="colName" jdbcType="VARCHAR" />
+			    <result column="target" property="target" jdbcType="VARCHAR"/>
+			    <result column="describe" property="describe" jdbcType="VARCHAR" />
+			    <result column="colSort" property="colSort" jdbcType="INTEGER" />
+			    <result column="columnStatus" property="columnStatus" jdbcType="BIGINT" />
+			    <result column="columnIsDeleted" property="columnIsDeleted" jdbcType="TINYINT" />
+		    </collection>
+		</collection>
+	</resultMap>  
+	<select id="getRoleMenuPermissions" resultMap="baseResourcesMap">
+		SELECT 
+		  sr.id AS roleId ,sr.roleCode , sr.roleName,sr.`status` AS roleStatus ,sr.isDeleted AS roleIsDeleted,
+		  sr.sysId,ss.sysCode ,ss.sysName ,ss.`status` AS systemStatus , ss.isDeleted AS systemIsDeleted, srm.menuId,
+		  sm.menuCode , sm.menuName,sm.parentId,sm.menuSort,sm.menuType,sm.`status` AS menuStatus ,sm.isDeleted AS menuIsDeleted,sm.url,
+		  srmc.columnId,smc.colCode ,smc.colName ,smc.target , smc.`describe`,smc.colSort, smc.`status` AS columnStatus , smc.isDeleted AS columnIsDeleted
+		FROM t_sys_role sr 
+		LEFT JOIN t_sys_system ss
+		ON sr.sysId = ss.id AND ss.`status` = 0 AND ss.isDeleted = 0
+		LEFT JOIN t_sys_rolemenu srm
+		ON sr.id = srm.roleId
+		LEFT JOIN t_sys_menu sm
+		ON sm.id = srm.menuId AND sm.`status` = 0 AND sm.isDeleted = 0 
+		LEFT JOIN t_sys_rolemenucolumn srmc
+		ON srm.id = srmc.roleMenuId 
+		LEFT JOIN t_sys_menucolumn smc 
+		ON smc.id = srmc.columnId AND smc.`status` = 0 AND smc.isDeleted = 0 
+		WHERE sr.`status` = 0 AND sr.isDeleted = 0 
+		<if test="sysCode!=null and sysCode!=''">
+			AND ss.sysCode = #{sysCode,jdbcType=VARCHAR} 
+		</if>
+		<if test="roleCode!=null and roleCode!=''">
+			AND sr.roleCode= #{roleCode,jdbcType=VARCHAR}
+		</if>
+	</select>
+	
+	<select id="queryTotalSysRole" resultType="map">
+		SELECT s.sysCode , r.roleCode from t_sys_role r
+		LEFT JOIN t_sys_system s 
+		ON r.sysId = s.id 
+		where s.`status` = 0 and s.isDeleted = 0 
+		and r.`status` = 0 and r.isDeleted=0;
+	</select>
+</mapper>

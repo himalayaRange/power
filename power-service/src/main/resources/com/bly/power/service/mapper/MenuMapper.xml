@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bly.power.service.mapper.MenuMapper">
+
+	<sql id="table_name">
+		t_sys_menu
+	</sql>
+	<sql id="table_link_name">
+		t_sys_menu m
+		LEFT JOIN t_sys_system s ON m.sysId=s.id
+		LEFT JOIN t_power_user sc ON m.creator = sc.id
+		LEFT JOIN t_power_user su ON m.updater = su.id
+	</sql>
+	<sql id="table_order">
+		<choose>
+			<when test="order !=null and sort !=null">
+				ORDER BY ${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY id DESC
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="table_page">
+		<if test="rowStart !=null  and  rowEnd !=null ">
+			<![CDATA[LIMIT #{rowStart},#{rowEnd}]]>
+		</if>
+	</sql>
+	<sql id="where_condition">
+		WHERE isDeleted=0
+		<if test="id !=null">
+			<![CDATA[ AND id =#{id}]]>
+		</if>
+		<if test="menuCode !=null and  menuCode !=''">			
+			<![CDATA[ AND menuCode LIKE CONCAT('%',#{menuCode},'%')]]>
+		</if>
+		<if test="menuName !=null and  menuName !=''">			
+			<![CDATA[ AND menuName LIKE CONCAT('%',#{menuName},'%')]]>
+		</if>
+		<if test="url !=null and  url !=''">			
+			<![CDATA[ AND url=#{url}]]>
+		</if>
+		<if test="parentId !=null">			
+			<![CDATA[ AND parentId=#{parentId}]]>
+		</if>
+		<if test="menuType !=null">			
+			<![CDATA[ AND menuType=#{menuType}]]>
+		</if>
+		<if test="sysId !=null">
+			<![CDATA[ AND sysId=#{sysId}]]>
+		</if>
+		<if test="menuSort !=null">
+			<![CDATA[ AND menuSort=#{menuSort}]]>
+		</if>
+	</sql>
+	
+	<sql id="where_link_condition">
+		WHERE m.isDeleted=0
+		<if test="id !=null">
+			<![CDATA[ AND m.id =#{id}]]>
+		</if>
+		<if test="menuCode !=null and  menuCode !=''">			
+			<![CDATA[ AND m.menuCode LIKE CONCAT('%',#{menuCode},'%')]]>
+		</if>
+		<if test="menuName !=null and  menuName !=''">			
+			<![CDATA[ AND m.menuName LIKE CONCAT('%',#{menuName},'%')]]>
+		</if>
+		<if test="url !=null and  url !=''">			
+			<![CDATA[ AND m.url LIKE CONCAT('%',#{url},'%')]]>
+		</if>
+		<if test="parentId !=null">			
+			<![CDATA[ AND m.parentId=#{parentId}]]>
+		</if>
+		<if test="menuType !=null">			
+			<![CDATA[ AND m.menuType=#{menuType}]]>
+		</if>
+		<if test="sysId !=null">
+			<![CDATA[ AND m.sysId=#{sysId}]]>
+		</if>
+		<if test="menuSort !=null">
+			<![CDATA[ AND m.menuSort=#{menuSort}]]>
+		</if>
+	</sql>
+	
+	<select id="count" resultType="long" parameterType="map">
+		SELECT COUNT(m.id)
+		FROM
+		<include refid="table_link_name" />
+		<include refid="where_link_condition" />
+	</select>
+
+	<select id="select" resultType="com.bly.power.interfaces.entity.power.MenuEntity">
+		SELECT
+		m.id,m.menuCode,m.menuName,m.url,m.parentId,m.menuType,m.sysId,m.menuSort,m.remark,
+		m.isDeleted, m.createTime, m.creator, m.updateTime, m.updater,s.sysCode,s.sysName,
+		m.status,sc.realName AS createrName , su.realName AS updaterName
+		FROM
+		<include refid="table_link_name" />
+		<include refid="where_link_condition" />
+		<include refid="table_order" />
+		<include refid="table_page" />
+	</select>
+
+	<insert id="insert" parameterType="com.bly.power.interfaces.entity.power.MenuEntity">
+		INSERT INTO
+		<include refid="table_name" />
+		(menuCode,menuName,url,parentId,menuType,sysId,status,menuSort,remark,
+		isDeleted, createTime, creator, updateTime,updater)
+		VALUES(#{menuCode},#{menuName},#{url},#{parentId},#{menuType},#{sysId},#{status},#{menuSort},#{remark},
+		0,now(),#{creator},now(),#{updater})
+	</insert>
+
+	<update id="update" parameterType="com.bly.power.interfaces.entity.power.MenuEntity">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now()
+		<if test="menuCode !=null and  menuCode !=''">
+				<![CDATA[, menuCode=#{menuCode}]]>
+		</if>
+		<if test="menuName !=null and  menuName !=''">
+				<![CDATA[, menuName=#{menuName}]]>
+		</if>
+		<if test="url !=null and  url !=''">
+				<![CDATA[, url=#{url}]]>
+		</if>
+		<if test="parentId !=null">
+				<![CDATA[, parentId=#{parentId}]]>
+		</if>
+		<if test="menuType !=null">
+				<![CDATA[, menuType=#{menuType}]]>
+		</if>
+		<if test="sysId !=null ">
+				<![CDATA[,  sysId=#{sysId}]]>
+		</if>
+		<if test="status !=null ">
+				<![CDATA[,  status=#{status}]]>
+		</if>
+		<if test="menuSort !=null ">
+				<![CDATA[,  menuSort=#{menuSort}]]>
+		</if>
+		<if test="remark !=null and remark !='' ">
+				<![CDATA[,  remark=#{remark}]]>
+		</if>
+		<if test="creator !=null">
+				<![CDATA[, creator=#{creator}]]>
+		</if>
+		<if test="updater !=null">
+				<![CDATA[, updater=#{updater}]]>
+		</if>
+		WHERE id=#{id}
+	</update>
+
+	<update id="delete" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id}
+	</update>
+
+	<select id="find" resultType="com.bly.power.interfaces.entity.power.MenuEntity"
+		parameterType="long">
+		SELECT
+		m.id,m.menuCode,m.menuName,m.url,m.parentId,m.menuType,m.sysId,m.menuSort,m.remark,
+		m.isDeleted, m.createTime, m.creator, m.updateTime, m.updater,s.sysCode,s.sysName,
+		m.status,sc.realName AS createrName , su.realName AS updaterName
+		FROM
+		<include refid="table_link_name" />
+		WHERE m.id=#{id}
+	</select>
+
+	<update id="deleteById" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id} and status=1
+	</update>
+
+	<update id="enableOrFreeze">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),status=#{status}
+		WHERE id=#{id}
+	</update>
+
+</mapper>

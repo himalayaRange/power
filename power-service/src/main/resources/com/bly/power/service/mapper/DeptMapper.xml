@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bly.power.service.mapper.DeptMapper">
+
+	<sql id="table_name">
+		t_sys_dept
+	</sql>
+	
+	<sql id="table_order">
+		<choose>
+			<when test="order !=null and sort !=null">
+				ORDER BY d.${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY d.id DESC
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="table_page">
+		<if test="rowStart !=null  and  rowEnd !=null ">
+			<![CDATA[LIMIT #{rowStart},#{rowEnd}]]>
+		</if>
+	</sql>
+	<sql id="where_condition">
+		WHERE d.isDeleted = 0
+		<if test="id !=null">
+			<![CDATA[ AND d.id =#{id}]]>
+		</if>
+		<if test="deptCode !=null and  deptCode !=''">			
+			<![CDATA[ AND d.deptCode LIKE CONCAT('%',#{deptCode},'%')]]>
+		</if>
+		<if test="deptName !=null and  deptName !=''">
+			<![CDATA[ AND d.deptName LIKE CONCAT('%',#{deptName},'%')]]>
+		</if>
+		<if test="deptMan !=null and deptMan !=''">
+			<![CDATA[ AND d.deptMan LIKE CONCAT('%',#{deptMan},'%')]]>
+		</if>
+		<if test="deptAddress !=null and deptAddress !=''">
+			<![CDATA[ AND d.deptAddress=#{deptAddress}]]>
+		</if>
+		<if test="comId !=null">
+			<![CDATA[ AND d.comId=#{comId}]]>
+		</if>
+		<if test="status !=null">
+			<![CDATA[ AND d.status=#{status}]]>
+		</if>
+		<if test="parentId !=null">
+			<![CDATA[ AND d.parentId=#{parentId}]]>
+		</if>
+		<if test="comCode !=null and comCode !=''">
+			<![CDATA[ AND c.comCode LIKE CONCAT('%',#{comCode},'%')]]>
+		</if>
+		<if test="comName !=null and comName !=''">
+			<![CDATA[ AND c.comName LIKE CONCAT('%',#{comName},'%')]]>
+		</if>
+		<if test="parentCode !=null and parentCode !=''">
+			<![CDATA[ AND p.deptCode LIKE CONCAT('%',#{parentCode},'%')]]>
+		</if>
+		<if test="parentName !=null and parentName !=''">
+			<![CDATA[ AND p.deptName LIKE CONCAT('%',#{parentName},'%')]]>
+		</if>
+	</sql>
+
+	<select id="count" resultType="long" parameterType="map">
+		SELECT COUNT(d.id)
+		FROM t_sys_dept d 
+		LEFT JOIN t_sys_company c ON d.comId=c.id
+		LEFT JOIN t_sys_dept p ON d.parentId=p.id
+		LEFT JOIN t_power_user sc ON d.creator = sc.id
+		LEFT JOIN t_power_user su ON d.updater = su.id
+		<include refid="where_condition" />
+	</select>
+
+	<select id="select" resultType="com.bly.power.interfaces.entity.system.DeptEntity">
+		SELECT d.id, d.deptCode,d.deptName,d.deptMan,d.deptAddress,d.comId,d.parentId,d.status,d.remark,
+			   d.isDeleted, d.createTime, d.creator, d.updateTime, d.updater,
+			   comCode,comName,p.deptCode AS parentCode,p.deptName AS parentName,
+			   sc.realName AS createrName , su.realName AS updaterName
+		FROM t_sys_dept d
+		LEFT JOIN t_sys_company c ON d.comId=c.id
+		LEFT JOIN t_sys_dept p ON d.parentId=p.id
+		LEFT JOIN t_power_user sc ON d.creator = sc.id
+		LEFT JOIN t_power_user su ON d.updater = su.id
+		<include refid="where_condition" />
+		<include refid="table_order" />
+		<include refid="table_page" />
+	</select>
+
+	<insert id="insert" parameterType="com.bly.power.interfaces.entity.system.DeptEntity">
+		INSERT INTO
+		<include refid="table_name" />
+		(deptCode,deptName,deptMan,deptAddress,comId,parentId,status,remark,
+		isDeleted, createTime, creator,updateTime,updater)
+		VALUES(#{deptCode},#{deptName},#{deptMan},#{deptAddress},#{comId},#{parentId},#{status},#{remark},
+		0,now(),#{creator},now(),#{updater})
+	</insert>
+
+	<update id="update" parameterType="com.bly.power.interfaces.entity.system.DeptEntity">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now()
+		<if test="deptCode !=null and  deptCode !=''">
+				<![CDATA[, deptCode=#{deptCode}]]>
+		</if>
+		<if test="deptName !=null and  deptName !=''">
+				<![CDATA[ , deptName=#{deptName}]]>
+		</if>
+		<if test="deptMan !=null and  deptMan !=''">
+				<![CDATA[ , deptMan=#{deptMan}]]>
+		</if>
+		<if test="deptAddress !=null and  deptAddress !=''">
+				<![CDATA[ , deptAddress=#{deptAddress}]]>
+		</if>
+		<if test="comId !=null ">
+				<![CDATA[ , comId=#{comId}]]>
+		</if>		
+		<if test="parentId !=null ">
+				<![CDATA[ , parentId=#{parentId}]]>
+		</if>
+		<if test="status !=null ">
+				<![CDATA[ , status=#{status}]]>
+		</if>
+		<if test="remark !=null and remark !='' ">
+				<![CDATA[ , remark=#{remark}]]>
+		</if>
+		<if test="creator !=null">
+				<![CDATA[, creator=#{creator}]]>
+		</if>
+		<if test="updater !=null">
+				<![CDATA[, updater=#{updater}]]>
+		</if>
+		WHERE id=#{id}
+	</update>
+
+	<update id="delete" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id}
+	</update>
+
+	<select id="selectById" resultType="com.bly.power.interfaces.entity.system.DeptEntity"
+		parameterType="long">
+		SELECT d.id, d.deptCode,d.deptName,d.deptMan,d.deptAddress,d.comId,d.parentId,d.status,d.remark,
+			   d.isDeleted, d.createTime, d.creator, d.updateTime, d.updater,
+			   comCode,comName,p.deptCode AS parentCode,p.deptName AS parentName,
+			   sc.realName AS createrName , su.realName AS updaterName
+		FROM t_sys_dept d
+		LEFT JOIN t_sys_company c ON d.comId=c.id
+		LEFT JOIN t_sys_dept p ON d.parentId=p.id
+		LEFT JOIN t_power_user sc ON d.creator = sc.id
+		LEFT JOIN t_power_user su ON d.updater = su.id
+		WHERE d.id=#{id}
+	</select>
+	
+	<update id="deleteById" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id} and status=1
+	</update>
+	
+	<update id="enableOrFreeze">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),status=#{status}
+		WHERE id=#{id}
+	</update>
+	
+	<select id="selectDeptByCompanyId" resultType="map" parameterType="long">
+		select id , deptCode, deptName,comId from t_sys_dept
+		where comId = #{comId,jdbcType=BIGINT} and status = 0 and isDeleted = 0
+	</select>
+	
+	<select id="selectSubordinateDeptById" resultType="map" parameterType="long">
+		SELECT
+			s.deptName AS parentDeptName,
+			d.id,
+			d.deptCode,
+			d.deptName,
+			d.deptMan,
+			d.deptAddress,
+			d.comId,
+			d. STATUS,
+			d.parentId,
+			d.remark,
+			d.createTime,
+			d.updateTime,
+			sc.realName AS createrName,
+			su.realName AS updaterName
+		FROM
+			t_sys_dept d
+		LEFT JOIN t_sys_dept s ON d.parentId = s.id
+		LEFT JOIN t_power_user sc ON d.creator = sc.id
+		LEFT JOIN t_power_user su ON d.updater = su.id
+		WHERE
+			d.parentId = #{id,jdbcType=BIGINT}
+		AND d. STATUS = 0
+		AND d.isDeleted = 0
+	</select>
+</mapper>

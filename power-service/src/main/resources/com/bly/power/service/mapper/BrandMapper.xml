@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bly.power.service.mapper.BrandMapper">
+
+	<sql id="table_name">
+		t_sys_brand
+	</sql>
+	<sql id="table_order">
+		<choose>
+			<when test="order !=null and sort !=null">
+				ORDER BY b.${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY b.id DESC
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="table_page">
+		<if test="rowStart !=null  and  rowEnd !=null ">
+			<![CDATA[LIMIT #{rowStart},#{rowEnd}]]>
+		</if>
+	</sql>
+	<sql id="where_condition">
+		WHERE 1=1
+		<if test="id !=null">
+			<![CDATA[ AND b.id =#{id}]]>
+		</if>
+		<if test="brandCode !=null and  brandCode !=''">			
+			<![CDATA[ AND b.brandCode LIKE CONCAT('%',#{brandCode},'%')]]>
+		</if>
+		<if test="brandName !=null and  brandName !=''">
+			<![CDATA[ AND b.brandName LIKE CONCAT('%', #{brandName},'%')]]>
+		</if>
+		<if test="comId !=null">
+			<![CDATA[ AND b.comId=#{comId}]]>
+		</if>
+		<if test="status !=null and  status !=''">
+			<![CDATA[ AND b.status LIKE CONCAT('%',#{status},'%')]]>
+		</if>
+		<if test="comCode !=null and  comCode !=''">
+			<![CDATA[ AND c.comCode LIKE CONCAT('%',#{comCode},'%')]]>
+		</if>
+		<if test="comName !=null and  comName !=''">
+			<![CDATA[ AND c.comName LIKE CONCAT('%',#{comName},'%')]]>
+		</if>
+		<if test="comName !=null and  comName !=''">
+			<![CDATA[ AND c.comName LIKE CONCAT('%',#{comName},'%')]]>
+		</if>
+	</sql>
+
+	<select id="count" resultType="long" parameterType="map">
+		SELECT COUNT(b.id)
+		FROM t_sys_brand b
+		LEFT JOIN t_sys_company c ON b.comId=c.id
+		LEFT JOIN t_power_user sc ON b.creator = sc.id
+		LEFT JOIN t_power_user su ON b.updater = su.id
+		<include refid="where_condition" />
+	</select>
+
+	<select id="select" resultType="com.bly.power.interfaces.entity.system.BrandEntity">
+		SELECT b.id, b.brandCode,b.brandName,b.comId,b.remark,
+		b.isDeleted, b.createTime, b.creator, b.updateTime, b.updater,
+		b.status,c.comCode,c.comName, sc.realName AS createrName , su.realName AS updaterName
+		FROM t_sys_brand b
+		LEFT JOIN t_sys_company c ON b.comId=c.id
+		LEFT JOIN t_power_user sc ON b.creator = sc.id
+		LEFT JOIN t_power_user su ON b.updater = su.id
+		<include refid="where_condition" />
+		<include refid="table_order" />
+		<include refid="table_page" />
+	</select>
+
+	<insert id="insert" parameterType="com.bly.power.interfaces.entity.system.BrandEntity">
+		INSERT INTO
+		<include refid="table_name" />
+		(brandCode,brandName,comId,remark,
+		isDeleted, createTime,
+		creator,updateTime,updater)
+		VALUES(#{brandCode},#{brandName},#{comId},#{remark},
+		0,now(),#{creator},now(),#{updater})
+	</insert>
+
+	<update id="update" parameterType="com.bly.power.interfaces.entity.system.BrandEntity">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now()
+		<if test="brandCode !=null and  brandCode !=''">
+				<![CDATA[, brandCode=#{brandCode}]]>
+		</if>
+		<if test="brandName !=null and  brandName !=''">
+				<![CDATA[ , brandName=#{brandName}]]>
+		</if>
+		<if test="comId !=null ">
+				<![CDATA[ , comId=#{comId}]]>
+		</if>
+		<if test="status !=null ">
+				<![CDATA[ , status=#{status}]]>
+		</if>
+		<if test="remark !=null and remark !='' ">
+				<![CDATA[ , remark=#{remark}]]>
+		</if>
+		<if test="creator !=null">
+				<![CDATA[, creator=#{creator}]]>
+		</if>
+		<if test="updater !=null">
+				<![CDATA[, updater=#{updater}]]>
+		</if>
+		WHERE id=#{id}
+	</update>
+
+	<update id="delete" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id}
+	</update>
+
+	<select id="selectById" resultType="com.bly.power.interfaces.entity.system.BrandEntity"
+		parameterType="long">
+		SELECT b.id, b.brandCode,b.brandName,b.comId,b.remark,
+		b.isDeleted, b.createTime, b.creator, b.updateTime, b.updater,
+		c.comCode,c.comName,sc.realName AS createrName , su.realName AS updaterName
+		FROM t_sys_brand b
+		LEFT JOIN t_sys_company c ON b.comId=c.id
+		LEFT JOIN t_power_user sc ON b.creator = sc.id
+		LEFT JOIN t_power_user su ON b.updater = su.id
+		WHERE b.id=#{id}
+	</select>
+
+	<update id="deleteById" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id} and status=1
+	</update>
+
+	<update id="enableOrFreeze">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),status=#{status}
+		WHERE id=#{id}
+	</update>
+
+</mapper>

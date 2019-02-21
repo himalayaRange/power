@@ -1,0 +1,6 @@
+http://localhost:10088/swagger-ui.html
+http://192.168.12.115:8080/swagger-ui.html
+http://192.168.12.119:9080
+http://192.168.12.119:9080/#/login
+http://192.168.12.119:9080/#/
+http://192.168.12.119/api

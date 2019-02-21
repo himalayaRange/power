@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bly.power.service.mapper.PowerUserMapper">
+
+	<sql id="table_name">
+		t_power_user
+	</sql>
+	<sql id="table_order">
+		<choose>
+			<when test="order !=null and sort !=null">
+				ORDER BY ${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY id DESC
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="table_page">
+		<if test="rowStart !=null  and  rowEnd !=null ">
+			<![CDATA[LIMIT #{rowStart},#{rowEnd}]]>
+		</if>
+	</sql>
+	
+	<sql id="where_condition">
+		WHERE isDeleted=0
+		<if test="id !=null">
+			<![CDATA[ AND id =#{id}]]>
+		</if>
+		<if test="userCode !=null and  userCode !=''">			
+			<![CDATA[ AND userCode =#{userCode}]]>
+		</if>
+		<if test="userName !=null and  userName !=''">			
+			<![CDATA[ AND userName =#{userName}]]>
+		</if>
+		<if test="passWord !=null and  passWord !=''">
+			<![CDATA[ AND passWord = #{passWord}]]>
+		</if>
+		<if test="realName !=null and realName !=''">
+			<![CDATA[ AND realName LIKE CONCAT('%',#{realName},'%')]]>
+		</if>
+		<if test="phone !=null and phone !=''">
+			<![CDATA[ AND phone LIKE CONCAT('%',#{phone},'%')]]>
+		</if>
+		<if test="status !=null">
+			<![CDATA[ AND status=#{status}]]>
+		</if>
+	</sql>
+
+	<select id="count" resultType="long" parameterType="map">
+		SELECT COUNT(id)
+		FROM t_power_user
+		<include refid="where_condition" />
+	</select>
+
+	<select id="select" resultType="com.bly.power.interfaces.entity.system.PowerUser">
+		SELECT  id, userCode, userName, passWord, realName, phone, status, 
+		remark, isDeleted, createTime, creator, updateTime, updater
+		FROM t_power_user
+		<include refid="where_condition" />
+		<include refid="table_order" />
+		<include refid="table_page" />
+	</select>
+
+	<insert id="insert" parameterType="com.bly.power.interfaces.entity.system.UserEntity">
+		insert into t_power_user
+	    <trim prefix="(" suffix=")" suffixOverrides="," >
+	      <if test="id != null" >
+	        id,
+	      </if>
+	      <if test="userCode != null" >
+	        userCode,
+	      </if>
+	      <if test="userName != null" >
+	        userName,
+	      </if>
+	      <if test="passWord != null" >
+	        passWord,
+	      </if>
+	      <if test="realName != null" >
+	        realName,
+	      </if>
+	      <if test="phone != null" >
+	        phone,
+	      </if>
+	      <if test="status != null" >
+	        status,
+	      </if>
+	      <if test="remark != null" >
+	        remark,
+	      </if>
+	      <if test="isDeleted != null" >
+	        isDeleted,
+	      </if>
+	      <if test="createTime != null" >
+	        createTime,
+	      </if>
+	      <if test="creator != null" >
+	        creator,
+	      </if>
+	      <if test="updateTime != null" >
+	        updateTime,
+	      </if>
+	      <if test="updater != null" >
+	        updater,
+	      </if>
+	    </trim>
+	    <trim prefix="values (" suffix=")" suffixOverrides="," >
+	      <if test="id != null" >
+	        #{id,jdbcType=BIGINT},
+	      </if>
+	      <if test="userCode != null" >
+	        #{userCode,jdbcType=VARCHAR},
+	      </if>
+	      <if test="userName != null" >
+	        #{userName,jdbcType=VARCHAR},
+	      </if>
+	      <if test="passWord != null" >
+	        #{passWord,jdbcType=VARCHAR},
+	      </if>
+	      <if test="realName != null" >
+	        #{realName,jdbcType=VARCHAR},
+	      </if>
+	      <if test="phone != null" >
+	        #{phone,jdbcType=VARCHAR},
+	      </if>
+	      <if test="status != null" >
+	        #{status,jdbcType=TINYINT},
+	      </if>
+	      <if test="remark != null" >
+	        #{remark,jdbcType=VARCHAR},
+	      </if>
+	      <if test="isDeleted != null" >
+	        #{isDeleted,jdbcType=TINYINT},
+	      </if>
+	      <if test="createTime != null" >
+	        #{createTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="creator != null" >
+	        #{creator,jdbcType=BIGINT},
+	      </if>
+	      <if test="updateTime != null" >
+	        #{updateTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="updater != null" >
+	        #{updater,jdbcType=BIGINT},
+	      </if>
+	    </trim>
+	</insert>
+
+	<update id="update" parameterType="com.bly.power.interfaces.entity.system.PowerUser">
+		update t_power_user
+	    <set >
+	      <if test="userCode != null" >
+	        userCode = #{userCode,jdbcType=VARCHAR},
+	      </if>
+	      <if test="userName != null" >
+	        userName = #{userName,jdbcType=VARCHAR},
+	      </if>
+	      <if test="passWord != null" >
+	        passWord = #{passWord,jdbcType=VARCHAR},
+	      </if>
+	      <if test="realName != null" >
+	        realName = #{realName,jdbcType=VARCHAR},
+	      </if>
+	      <if test="phone != null" >
+	        phone = #{phone,jdbcType=VARCHAR},
+	      </if>
+	      <if test="status != null" >
+	        status = #{status,jdbcType=TINYINT},
+	      </if>
+	      <if test="remark != null" >
+	        remark = #{remark,jdbcType=VARCHAR},
+	      </if>
+	      <if test="isDeleted != null" >
+	        isDeleted = #{isDeleted,jdbcType=TINYINT},
+	      </if>
+	      <if test="createTime != null" >
+	        createTime = #{createTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="creator != null" >
+	        creator = #{creator,jdbcType=BIGINT},
+	      </if>
+	      <if test="updateTime != null" >
+	        updateTime = #{updateTime,jdbcType=TIMESTAMP},
+	      </if>
+	      <if test="updater != null" >
+	        updater = #{updater,jdbcType=BIGINT},
+	      </if>
+	    </set>
+	    where id = #{id,jdbcType=BIGINT}
+	</update>
+
+	<update id="delete" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id}
+	</update>
+
+	<select id="find" resultType="com.bly.power.interfaces.entity.system.PowerUser"
+		parameterType="long">
+		SELECT id, userCode, userName, passWord, realName, phone, status, 
+		remark, isDeleted, createTime, creator, updateTime, updater
+		FROM t_power_user
+		WHERE id=#{id}
+	</select>
+
+	<select id="getUserByUserName" resultType="com.bly.power.interfaces.entity.system.PowerUser" parameterType="java.lang.String">
+		SELECT id, userCode, userName, passWord, realName, phone, status, 
+		remark, isDeleted, createTime, creator, updateTime, updater
+		FROM <include refid="table_name" />
+		WHERE userName=#{userName}
+	</select>
+	
+	<update id="deleteById" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id} and status=1
+	</update>
+	
+	<update id="enableOrFreeze">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),status=#{status}
+		WHERE id=#{id}
+	</update>
+
+</mapper>

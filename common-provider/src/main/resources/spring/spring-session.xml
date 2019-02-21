@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context" 
+		xmlns:jdbc="http://www.springframework.org/schema/jdbc" xmlns:tx="http://www.springframework.org/schema/tx"
+		xmlns:jpa="http://www.springframework.org/schema/data/jpa" xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-4.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd"
+		>
+	
+		<description> spring-session配置 </description>
+		
+		<!-- session过期时间，web.xml中session配置失效 ,30min-->
+		<bean id="redisHttpSessionConfiguration" class="org.springframework.session.data.redis.config.annotation.web.http.RedisHttpSessionConfiguration">
+			<property name="maxInactiveIntervalInSeconds" value="${redis.maxInactiveIntervalInSeconds}"/>
+		</bean>
+
+		<!-- redis对象池-->
+		<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+			<property name="maxTotal" value="${redis.maxTotal}" />  
+	        <property name="maxIdle" value="${redis.maxIdle}" />  
+	        <property name="minIdle" value="${redis.minIdle}"/>
+	        <property name="maxWaitMillis" value="${redis.maxWaitMillis}" />  
+	        <property name="testOnBorrow" value="true" />  
+	        <property name="testOnReturn" value="true"/>  
+		</bean>
+
+		<!-- redis连接工厂 -->
+		<bean id="jedisConnectionFactory"  class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+	         <property name="usePool" value="true" />
+	         <property name="hostName" value="${redis.host}"/>  
+			 <property name="port" value="${redis.port}"/>  
+	         <property name="password" value="${redis.password}"/>
+	         <property name="timeout" value="${redis.timeout}" />  
+	         <property name="database" value="${redis.db}" /> 
+			 <property name="poolConfig" ref="jedisPoolConfig"/>
+		</bean>
+		
+		
+		<!-- 所有存储在redis中的对象必须要进行序列化 -->
+		<bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+			<property name="connectionFactory" ref="jedisConnectionFactory"></property>  
+	        <property name="keySerializer">  
+	            <bean  class="org.springframework.data.redis.serializer.StringRedisSerializer" />  
+	        </property>  
+	        <property name="valueSerializer">  
+	            <bean  class="org.springframework.data.redis.serializer.JdkSerializationRedisSerializer" />  
+	        </property>  
+	        <property name="hashKeySerializer">  
+	            <bean  class="org.springframework.data.redis.serializer.StringRedisSerializer" />  
+	        </property>  
+	        <property name="hashValueSerializer">  
+	            <bean  class="org.springframework.data.redis.serializer.StringRedisSerializer" />  
+	        </property>  
+		</bean>
+		
+	   <bean id="defaultCookieSerializer" class="org.springframework.session.web.http.DefaultCookieSerializer">
+			 <property name="cookieName" value="COMMON_SESSION_ID" />  
+       		 <property name="cookiePath" value="/" />  
+		</bean>
+		
+		<bean id="cookieHttpSessionStrategy"  class="org.springframework.session.web.http.CookieHttpSessionStrategy">  
+        	<property name="cookieSerializer" ref="defaultCookieSerializer" />  
+   		</bean>
+</beans>

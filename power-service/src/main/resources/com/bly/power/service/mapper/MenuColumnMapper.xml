@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bly.power.service.mapper.MenuColumnMapper">
+
+	<sql id="table_name">
+		t_sys_menucolumn
+	</sql>
+	<sql id="table_order">
+		<choose>
+			<when test="order !=null and sort !=null">
+				ORDER BY ${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY id DESC
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="table_page">
+		<if test="rowStart !=null  and  rowEnd !=null ">
+			<![CDATA[LIMIT #{rowStart},#{rowEnd}]]>
+		</if>
+	</sql>
+	<sql id="where_condition">
+		WHERE mc.isDeleted=0
+		<if test="id !=null">
+			<![CDATA[ AND mc.id =#{id}]]>
+		</if>
+		<if test="menuId !=null">
+			<![CDATA[ AND mc.menuId=#{menuId}]]>
+		</if>
+		<if test="colCode !=null and  colCode !=''">			
+			<![CDATA[ AND mc.colCode LIKE CONCAT('%',#{colCode},'%')]]>
+		</if>
+		<if test="colName !=null and  colName !=''">			
+			<![CDATA[ AND mc.colName LIKE CONCAT('%',#{colName},'%')]]>
+		</if>
+		<if test="colSort !=null">
+			<![CDATA[ AND mc.colSort=#{colSort}]]>
+		</if>
+	</sql>
+
+	<select id="count" resultType="long" parameterType="map">
+		SELECT COUNT(mc.id)
+		FROM t_sys_menucolumn mc
+		LEFT JOIN t_power_user sc
+		ON mc.creator = sc.id
+		LEFT JOIN t_power_user su
+		ON mc.updater = su.id
+		<include refid="where_condition" />
+	</select>
+
+	<select id="select"	resultType="com.bly.power.interfaces.entity.power.MenuColumnEntity">
+		SELECT  mc.id,mc.menuId,mc.colCode,mc.colName,mc.colSort,mc.status,mc.describe,
+		mc.isDeleted, mc.createTime,mc.creator, mc.updateTime, mc.updater,mc.target,
+		sc.realName AS createrName , su.realName AS updaterName
+		FROM t_sys_menucolumn mc
+		LEFT JOIN t_power_user sc
+		ON mc.creator = sc.id
+		LEFT JOIN t_power_user su
+		ON mc.updater = su.id
+		<include refid="where_condition" />
+		<include refid="table_order" />
+		<include refid="table_page" />
+	</select>
+
+	<insert id="insert"
+		parameterType="com.bly.power.interfaces.entity.power.MenuColumnEntity">
+		INSERT INTO
+		<include refid="table_name" />
+		(menuId,colCode,colName,colSort,target,
+		isDeleted, status,`describe`,createTime, creator,updateTime,updater)
+		VALUES(#{menuId},#{colCode},#{colName},#{colSort},#{target},
+		0,#{status},#{describe},now(),#{creator},now(),#{updater})
+	</insert>
+
+	<update id="update"
+		parameterType="com.bly.power.interfaces.entity.power.MenuColumnEntity">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now()
+		<if test="menuId !=null ">
+				<![CDATA[,  menuId=#{menuId}]]>
+		</if>
+		<if test="colCode !=null and  colCode !=''">
+				<![CDATA[, colCode=#{colCode}]]>
+		</if>
+		<if test="colName !=null and  colName !=''">
+				<![CDATA[, colName=#{colName}]]>
+		</if>
+		<if test="colSort !=null ">
+				<![CDATA[,  colSort=#{colSort}]]>
+		</if>
+		<if test="target !=null and  target !=''">
+				<![CDATA[, target=#{target}]]>
+		</if>
+		<if test="status !=null ">
+				<![CDATA[,  status=#{status}]]>
+		</if>
+		<if test="describe !=null ">
+				<![CDATA[,  `describe`=#{describe}]]>
+		</if>
+		<if test="creator !=null">
+				<![CDATA[, creator=#{creator}]]>
+		</if>
+		<if test="updater !=null">
+				<![CDATA[, updater=#{updater}]]>
+		</if>
+		WHERE id=#{id}
+	</update>
+
+	<update id="delete" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id}
+	</update>
+	
+	<update id="deleteById" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id} and status=1
+	</update>
+	
+	<update id="enableOrFreeze">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),status=#{status}
+		WHERE id=#{id}
+	</update>
+	
+	<select id="find"	resultType="com.bly.power.interfaces.entity.power.MenuColumnEntity"	parameterType="long">
+		SELECT  mc.id,mc.menuId,mc.colCode,mc.colName,mc.colSort,mc.status,mc.describe,
+		mc.isDeleted, mc.createTime,mc.creator, mc.updateTime, mc.updater,mc.target,
+		sc.realName AS createrName , su.realName AS updaterName
+		FROM t_sys_menucolumn mc
+		LEFT JOIN t_power_user sc
+		ON mc.creator = sc.id
+		LEFT JOIN t_power_user su
+		ON mc.updater = su.id
+		WHERE mc.id=#{id}
+	</select>
+
+	<delete id="deleteByMenuId" parameterType="java.lang.Long">
+		DELETE FROM
+		<include refid="table_name" />
+		WHERE menuId=#{menuId}
+	</delete>
+	
+	<select id="selectByMenuId" parameterType="java.lang.Long" resultType="com.bly.power.interfaces.entity.power.MenuColumnEntity">
+		SELECT id,menuId,colCode,colName,colSort,status,`describe`,
+		isDeleted, createTime,creator, updateTime, updater,target
+		FROM t_sys_menucolumn
+		WHERE  menuId=#{menuId}
+	</select>
+</mapper>

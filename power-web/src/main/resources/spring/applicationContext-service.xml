@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+	http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.0.xsd 
+	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd
+	http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd">
+
+	<!-- <context:property-placeholder location="classpath:resource/*.properties" /> -->
+	<!-- 多个配置文件交给spring管理 -->
+	<bean id="configProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath:resource/resource.properties</value>
+                <value>classpath:resource/redis.properties</value>
+            </list>
+        </property>
+    </bean>
+	<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PreferencesPlaceholderConfigurer">
+        <property name="properties" ref="configProperties"></property>
+    </bean>
+
+	<!-- 扫描包加载Service实现类 -->
+	<context:component-scan base-package="com.bly.power.web.service" />
+
+	<aop:aspectj-autoproxy proxy-target-class="true" />
+	
+	<!-- 缓存 单例模式 -->
+	<import resource="spring-session.xml"/>
+	
+	<!-- 缓存 集群 模式-->
+	<import resource="redisson-context.xml"/>	
+	
+	<!-- 服务消费者 -->
+	<import resource="dubbo-consumer.xml" />
+	
+	<!-- 缓存注入 -->
+	<import resource="spring-context-cache.xml"/>
+	
+	<bean id="powerCache" class="com.bly.power.web.bean.PowerContainer"/>
+</beans>

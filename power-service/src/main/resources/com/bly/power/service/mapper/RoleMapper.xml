@@ -1,0 +1,387 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bly.power.service.mapper.RoleMapper">
+
+	<sql id="table_name">
+		t_sys_role
+	</sql>
+
+	<sql id="table_link_name">
+		t_sys_role r
+		LEFT JOIN t_power_user sc
+		ON r.creator = sc.id
+		LEFT JOIN t_power_user su
+		ON r.updater = su.id
+	</sql>
+
+	<sql id="table_order">
+		<choose>
+			<when test="order !=null and sort !=null">
+				ORDER BY ${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY id DESC
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="table_page">
+		<if test="rowStart !=null  and  rowEnd !=null ">
+			<![CDATA[LIMIT #{rowStart},#{rowEnd}]]>
+		</if>
+	</sql>
+	<sql id="where_condition">
+		WHERE r.isDeleted=0
+		<if test="id !=null">
+			<![CDATA[ AND r.id =#{id}]]>
+		</if>
+		<if test="roleCode !=null and  roleCode !=''">			
+			<![CDATA[ AND r.roleCode LIKE CONCAT('%',#{roleCode},'%')]]>
+		</if>
+		<if test="roleName !=null and  roleName !=''">			
+			<![CDATA[ AND r.roleName LIKE CONCAT('%',#{roleName},'%')]]>
+		</if>
+		<if test="sysId !=null">
+			<![CDATA[ AND r.sysId=#{sysId}]]>
+		</if>
+		<if test="status != null and status != ''">
+			<![CDATA[ AND r.status=#{status}]]>
+		</if>
+		<if test="startTime != null and startTime != ''">
+			<![CDATA[ AND r.createTime >= #{startTime}]]>
+		</if>
+		<if test="endTime != null and endTime != ''">
+			<![CDATA[ AND r.createTime <= #{endTime}]]>
+		</if>
+	</sql>
+
+	<select id="count" resultType="long" parameterType="map">
+		SELECT COUNT(DISTINCT r.roleCode)
+		FROM
+		<include refid="table_link_name" />
+		<include refid="where_condition" />
+	</select>
+
+	<select id="select" resultType="com.bly.power.interfaces.entity.power.RoleEntity">
+		SELECT r.id,r.roleCode,r.roleName,r.sysId,r.remark,r.status,
+		r.isDeleted, r.createTime, r.creator, r.updateTime, r.updater,
+		sc.realName AS createrName , su.realName AS
+		updaterName,GROUP_CONCAT(r.sysId) AS sysIds
+		FROM
+		<include refid="table_link_name" />
+		<include refid="where_condition" />
+		GROUP BY r.roleCode
+		<include refid="table_order" />
+		<include refid="table_page" />
+	</select>
+
+	<insert id="insert" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.bly.power.interfaces.entity.power.RoleEntity">
+		insert into
+		<include refid="table_name" />
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="roleCode != null">
+				roleCode,
+			</if>
+			<if test="roleName != null">
+				roleName,
+			</if>
+			<if test="sysId != null">
+				sysId,
+			</if>
+			<if test="remark != null">
+				remark,
+			</if>
+			<if test="status != null">
+				status,
+			</if>
+			<if test="isDeleted != null">
+				isDeleted,
+			</if>
+			<if test="createTime != null">
+				createTime,
+			</if>
+			<if test="creator != null">
+				creator,
+			</if>
+			<if test="updateTime != null">
+				updateTime,
+			</if>
+			<if test="updater != null">
+				updater,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="roleCode != null">
+				#{roleCode,jdbcType=VARCHAR},
+			</if>
+			<if test="roleName != null">
+				#{roleName,jdbcType=VARCHAR},
+			</if>
+			<if test="sysId != null">
+				#{sysId,jdbcType=INTEGER},
+			</if>
+			<if test="remark != null">
+				#{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="status != null">
+				#{status,jdbcType=BIGINT},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=TINYINT},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="creator != null">
+				#{creator,jdbcType=BIGINT},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updater != null">
+				#{updater,jdbcType=BIGINT},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="update" parameterType="com.bly.power.interfaces.entity.power.RoleEntity">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now()
+		<if test="roleCode !=null and  roleCode !=''">
+				<![CDATA[, roleCode=#{roleCode}]]>
+		</if>
+		<if test="roleName !=null and  roleName !=''">
+				<![CDATA[, roleName=#{roleName}]]>
+		</if>
+		<if test="sysId !=null ">
+				<![CDATA[,  sysId=#{sysId}]]>
+		</if>
+		<if test="status !=null ">
+				<![CDATA[,  sysId=#{sysId}]]>
+		</if>
+		<if test="remark !=null and remark !='' ">
+				<![CDATA[,  remark=#{remark}]]>
+		</if>
+		<if test="creator !=null">
+				<![CDATA[, creator=#{creator}]]>
+		</if>
+		<if test="updater !=null">
+				<![CDATA[, updater=#{updater}]]>
+		</if>
+		WHERE id=#{id}
+	</update>
+
+	<update id="delete" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id}
+	</update>
+
+	<update id="deleteById" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id} AND status=1
+	</update>
+
+	<update id="enableOrFreeze">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),status=#{status}
+		WHERE id=#{id}
+	</update>
+
+	<select id="find" resultType="com.bly.power.interfaces.entity.power.RoleEntity"
+		parameterType="long">
+		SELECT r.id,r.roleCode,r.roleName,r.sysId,r.remark,r.status,
+		r.isDeleted, r.createTime, r.creator, r.updateTime, r.updater,
+		sc.realName AS createrName , su.realName AS updaterName
+		FROM
+		<include refid="table_link_name" />
+		WHERE r.id=#{id}
+	</select>
+
+	<resultMap id="baseResourcesMap"
+		type="com.bly.power.interfaces.entity.power.SysMenuColumnEntity">
+		<id property="id" column="id" />
+		<result property="sysCode" column="sysCode" />
+		<result property="sysName" column="sysName" />
+		<!-- collection映射系统和菜单一对多的映射关系 -->
+		<collection property="menuList"
+			ofType="com.bly.power.interfaces.entity.power.MenuEntity">
+			<id column="meneId" property="id" jdbcType="BIGINT" />
+			<result column="menuCode" property="menuCode" jdbcType="VARCHAR" />
+			<result column="menuName" property="menuName" jdbcType="VARCHAR" />
+			<result column="url" property="url" jdbcType="VARCHAR" />
+			<result column="parentId" property="parentId" jdbcType="BIGINT" />
+			<result column="menuType" property="menuType" jdbcType="TINYINT" />
+			<result column="sysId" property="sysId" jdbcType="BIGINT" />
+			<result column="menuSort" property="menuSort" jdbcType="INTEGER" />
+			<result column="remark" property="remark" jdbcType="VARCHAR" />
+			<result column="isDeleted" property="isDeleted" jdbcType="TINYINT" />
+			<result column="createTime" property="createTime" jdbcType="TIMESTAMP" />
+			<result column="creator" property="creator" jdbcType="BIGINT" />
+			<result column="updateTime" property="updateTime" jdbcType="TIMESTAMP" />
+			<result column="updater" property="updater" jdbcType="BIGINT" />
+			<result column="status" property="status" jdbcType="BIGINT" />
+			<!-- collection映射菜单和菜单功能列表 -->
+			<collection property="columns"
+				ofType="com.bly.power.interfaces.entity.power.MenuColumnEntity">
+				<id column="columnId" property="id" jdbcType="BIGINT" />
+				<result column="menuId" property="menuId" jdbcType="BIGINT" />
+				<result column="colCode" property="colCode" jdbcType="VARCHAR" />
+				<result column="colName" property="colName" jdbcType="VARCHAR" />
+				<result column="colSort" property="colSort" jdbcType="INTEGER" />
+				<result column="target" property="target" jdbcType="VARCHAR" />
+				<result column="describe" property="describe" jdbcType="VARCHAR" />
+				<result column="columnStatus" property="status" jdbcType="BIGINT" />
+				<result column="columnIsDeleted" property="isDeleted"
+					jdbcType="TINYINT" />
+				<result column="columnCreateTime" property="createTime"
+					jdbcType="TIMESTAMP" />
+				<result column="columnCreator" property="creator" jdbcType="BIGINT" />
+				<result column="columnUpdateTime" property="updateTime"
+					jdbcType="TIMESTAMP" />
+				<result column="columnUpdater" property="updater" jdbcType="BIGINT" />
+			</collection>
+			<!-- association将关联查询信息映射到一个pojo对象中 -->
+			<!-- <association property="" javaType=""></association> -->
+		</collection>
+	</resultMap>
+
+	<select id="initResourcesMaps" resultMap="baseResourcesMap">
+		SELECT
+		ss.id , ss.sysCode , ss.sysName,
+		sm.id AS meneId, sm.menuCode,
+		sm.menuName,sm.url,sm.parentId,sm.menuType,sm.sysId,sm.menuSort,
+		sm.remark,sm.isDeleted, sm.createTime, sm.creator, sm.updateTime,
+		sm.updater,sm.status,
+		sc.id AS columnId, sc.menuId, sc.colCode, sc.colName, sc.colSort,
+		sc.describe, sc.status AS columnStatus,
+		sc.isDeleted AS columnIsDeleted, sc.createTime AS columnCreateTime, sc.creator AS
+		columnCreator,
+		sc.target, sc.updateTime AS columnUpdateTime, sc.updater AS columnUpdater
+		FROM
+		t_sys_system ss
+		LEFT OUTER JOIN t_sys_menu sm ON sm.sysId = ss.id AND
+		sm.isDeleted =0 AND sm.`status` = 0
+		LEFT OUTER JOIN t_sys_menucolumn sc
+		ON sc.menuId = sm.id AND sc.isDeleted = 0 AND sc.`status` = 0
+		where
+		ss.isDeleted = 0 AND ss.`status` = 0
+	</select>
+
+	<!-- 插入角色菜单中间表 -->
+	<insert id="insertRoleMenu" useGeneratedKeys="true" keyProperty="id"
+		parameterType="com.bly.power.interfaces.entity.power.RoleMenuEntity">
+		insert into t_sys_rolemenu
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="roleId != null">
+				roleId,
+			</if>
+			<if test="menuId != null">
+				menuId,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="roleId != null">
+				#{roleId,jdbcType=BIGINT},
+			</if>
+			<if test="menuId != null">
+				#{menuId,jdbcType=BIGINT},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 更新角色菜单菜单中间表 -->
+	<update id="updateRoleMenu"
+		parameterType="com.bly.power.interfaces.entity.power.RoleMenuEntity">
+		update t_sys_rolemenu
+		<set>
+			<if test="roleId != null">
+				roleId = #{roleId,jdbcType=BIGINT},
+			</if>
+			<if test="menuId != null">
+				menuId = #{menuId,jdbcType=BIGINT},
+			</if>
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+
+	<!-- 插入菜单菜单列中间表 -->
+	<insert id="insertRoleMenuColumn"
+		parameterType="com.bly.power.interfaces.entity.power.RoleMenuColumnEntity">
+		insert into t_sys_rolemenucolumn
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="roleMenuId != null">
+				roleMenuId,
+			</if>
+			<if test="columnId != null">
+				columnId,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="roleMenuId != null">
+				#{roleMenuId,jdbcType=BIGINT},
+			</if>
+			<if test="columnId != null">
+				#{columnId,jdbcType=BIGINT},
+			</if>
+		</trim>
+	</insert>
+
+	<!-- 更新 菜单菜单列中间表 -->
+	<update id="updateRoleMenuColumn"
+		parameterType="com.bly.power.interfaces.entity.power.RoleMenuColumnEntity">
+		update t_sys_rolemenucolumn
+		<set>
+			<if test="roleMenuId != null">
+				roleMenuId = #{roleMenuId,jdbcType=BIGINT},
+			</if>
+			<if test="columnId != null">
+				columnId = #{columnId,jdbcType=BIGINT},
+			</if>
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+
+	<!-- 通过角色ID删除该角色id下的级联信息 -->
+	<select id="deleteRoleReferenceInfo" parameterType="java.lang.Long"
+		statementType="CALLABLE">
+		call P_DELETE_ROLE_REFENCE_INFO(#{id,mode=IN,jdbcType=BIGINT})
+	</select>
+
+	<!-- 通过roleCode查询角色信息 -->
+	<select id="selectSysRoleByRoleCode" parameterType="java.lang.String" resultType="com.bly.power.interfaces.entity.power.RoleEntity">
+		select id , roleCode , roleName , sysId , status , isDeleted ,createTime , updateTime 
+		FROM 
+		t_sys_role where 1=1
+		AND roleCode = #{roleCode, jdbcType=VARCHAR}
+	</select>
+	
+	<!-- 初始化所有的角色列表 -->
+	<select id="initTotalRoles" resultType="map">
+		SELECT id , roleCode , roleName FROM t_sys_role where isDeleted = 0 and `status` = 0
+	</select>
+</mapper>

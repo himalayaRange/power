@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans  
+        http://www.springframework.org/schema/beans/spring-beans.xsd  
+        http://code.alibabatech.com/schema/dubbo  
+        http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+        
+	<!-- 消费方应用名，用于计算依赖关系，不是匹配条件，不要与提供方一样 -->
+	<dubbo:application name="power-web" owner="${dubbo.owner}" organization="${dubbo.organization}" environment="develop"/>
+
+	<!-- 使用zookeeper注册中心暴露服务地址 -->
+    <dubbo:registry protocol="${zookeeper.protocol}"  client="${zookeeper.client}" address="${zookeeper.address}" check="false"/>
+    
+	<!-- 系统管理员服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.PowerUserService" id="powerUserService" check="false" version="1.0.0"/>
+	<!-- 用户服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.UserService" id="userService" check="false" version="1.0.0"/>
+	<!-- 公司服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.CompanyService" id="companyService" check="false" version="1.0.0"/>
+	<!-- 公司服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.DeptService" id="deptService" check="false" version="1.0.0"/>
+	<!-- 品牌服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.BrandService" id="brandService" check="false" version="1.0.0"/>
+	<!-- 仓库服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.WarehouseService" id="warehouseService" check="false" version="1.0.0"/>
+	<!-- 角色服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.RoleService" id="roleService" check="false" version="1.0.0"/>
+	<!-- 菜单服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.MenuService" id="menuService" check="false" version="1.0.0"/>
+	<!-- 系统服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.SystemService" id="systemService" check="false" version="1.0.0"/>
+	<!-- 菜单列服务接口 -->
+	<dubbo:reference cluster="failover" interface="com.bly.power.interfaces.service.MenuColumnService" id="menuColumnService" check="false" version="1.0.0"/>
+	<!-- 开放接口，远程获取角色权限 -->
+	<dubbo:reference cluster="forking" interface="com.bly.power.interfaces.service.RestService" id="restService" check="false" version="1.0.0"/>
+</beans>  

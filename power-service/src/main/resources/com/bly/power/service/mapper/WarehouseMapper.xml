@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bly.power.service.mapper.WarehouseMapper">
+
+	<sql id="table_name">
+		t_sys_warehouse
+	</sql>
+	<sql id="table_order">
+		<choose>
+			<when test="order !=null and sort !=null">
+				ORDER BY w.${sort} ${order}
+			</when>
+			<otherwise>
+				ORDER BY w.id DESC
+			</otherwise>
+		</choose>
+	</sql>
+
+	<sql id="table_page">
+		<if test="rowStart !=null  and  rowEnd !=null ">
+			<![CDATA[LIMIT #{rowStart},#{rowEnd}]]>
+		</if>
+	</sql>
+	<sql id="where_condition">
+		WHERE w.isDeleted=0
+		<if test="id !=null">
+			<![CDATA[ AND w.id =#{id}]]>
+		</if>
+		<if test="wareCode !=null and  wareCode !=''">			
+			<![CDATA[ AND w.wareCode LIKE CONCAT('%',#{wareCode},'%')]]>
+		</if>
+		<if test="wareName !=null and  wareName !=''">			
+			<![CDATA[ AND w.wareName LIKE CONCAT('%',#{wareName},'%')]]>
+		</if>
+		<if test="comId !=null">
+			<![CDATA[ AND w.comId=#{comId}]]>
+		</if>
+		<if test="wareMan !=null and wareMan !=''">
+			<![CDATA[ AND w.wareMan=#{wareMan}]]>
+		</if>
+		<if test="wareAddress !=null and wareAddress !=''">
+			<![CDATA[ AND w.wareAddress=#{wareAddress}]]>
+		</if>
+		<if test="parentId !=null">
+			<![CDATA[ AND w.parentId=#{parentId}]]>
+		</if>
+		<if test="comCode !=null and  comCode !=''">			
+			<![CDATA[ AND c.comCode LIKE CONCAT('%',#{comCode},'%')]]>
+		</if>
+		<if test="comName !=null and  comName !=''">			
+			<![CDATA[ AND c.comName LIKE CONCAT('%',#{comName},'%')]]>
+		</if>
+	</sql>
+
+	<select id="count" resultType="long" parameterType="map">
+		SELECT COUNT(w.id)
+		FROM t_sys_warehouse w
+		LEFT JOIN t_sys_company c ON w.comId=c.id
+		LEFT JOIN t_power_user sc ON w.creator = sc.id
+		LEFT JOIN t_power_user su ON w.updater = su.id
+		<include refid="where_condition" />
+	</select>
+
+	<select id="select"	resultType="com.bly.power.interfaces.entity.system.WarehouseEntity">
+		SELECT w.id,w.wareCode,w.wareName,w.comId,w.wareMan,w.wareAddress,w.parentId,w.remark,
+		w.isDeleted, w.createTime, w.creator, w.updateTime, w.updater,w.warePhone,w.status,
+		c.comCode,c.comName, sc.realName AS createrName , su.realName AS updaterName
+		FROM t_sys_warehouse w
+		LEFT JOIN t_sys_company c ON w.comId=c.id
+		LEFT JOIN t_power_user sc ON w.creator = sc.id
+		LEFT JOIN t_power_user su ON w.updater = su.id
+		<include refid="where_condition" />
+		<include refid="table_order" />
+		<include refid="table_page" />
+	</select>
+	
+	<select id="selectWarehouseParentsInfo" resultType="java.util.HashMap">
+		SELECT w.id,w.wareCode,w.wareName,w.parentId,case when w.parentId=0 then 'ROOT' else sw.wareName end AS parentName,w.isDeleted,w.status
+		FROM t_sys_warehouse w
+		LEFT JOIN  t_sys_warehouse sw
+		ON w.parentId = sw.id
+		where w.isDeleted = 0
+	</select>
+
+	<insert id="insert"
+		parameterType="com.bly.power.interfaces.entity.system.WarehouseEntity">
+		INSERT INTO
+		<include refid="table_name" />
+		(wareCode,wareName,comId,wareMan,warePhone,wareAddress,parentId,remark,
+		isDeleted,status, createTime, creator, updateTime, updater)
+		VALUES(#{wareCode},#{wareName},#{comId},#{wareMan},#{warePhone},#{wareAddress},#{parentId},#{remark},
+		0,#{status},now(),#{creator},now(),#{updater})
+	</insert>
+
+	<update id="update"
+		parameterType="com.bly.power.interfaces.entity.system.WarehouseEntity">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now()
+		<if test="wareCode !=null and  wareCode !=''">
+				<![CDATA[, wareCode=#{wareCode}]]>
+		</if>
+		<if test="wareName !=null and  wareName !=''">
+				<![CDATA[, wareName=#{wareName}]]>
+		</if>
+		<if test="comId !=null ">
+				<![CDATA[,  comId=#{comId}]]>
+		</if>
+		<if test="wareMan !=null and wareMan !=''">
+				<![CDATA[, wareMan=#{wareMan}]]>
+		</if>
+		<if test="warePhone !=null and warePhone !=''">
+				<![CDATA[, warePhone=#{warePhone}]]>
+		</if>
+		<if test="status !=null and status !=''">
+				<![CDATA[, status=#{status}]]>
+		</if>
+		<if test="wareAddress !=null and wareAddress !=''">
+				<![CDATA[, wareAddress=#{wareAddress}]]>
+		</if>
+		<if test="parentId !=null">
+				<![CDATA[, parentId=#{parentId}]]>
+		</if>
+		<if test="remark !=null and remark !=''">
+				<![CDATA[, remark=#{remark}]]>
+		</if>
+		<if test="creator !=null">
+				<![CDATA[, creator=#{creator}]]>
+		</if>
+		<if test="updater !=null">
+				<![CDATA[, updater=#{updater}]]>
+		</if>
+		WHERE id=#{id}
+	</update>
+
+	<update id="delete" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id}
+	</update>
+
+	<select id="selectById"	resultType="com.bly.power.interfaces.entity.system.WarehouseEntity"
+		parameterType="long">
+		SELECT w.id,w.wareCode,w.wareName,w.comId,w.wareMan,w.wareAddress,w.parentId,w.remark,
+		w.isDeleted, w.createTime, w.creator, w.updateTime, w.updater,w.warePhone,w.status,
+		c.comCode,c.comName,sc.realName AS createrName , su.realName AS updaterName
+		FROM t_sys_warehouse w
+		LEFT JOIN t_sys_company c ON w.comId=c.id
+		LEFT JOIN t_power_user sc ON w.creator = sc.id
+		LEFT JOIN t_power_user su ON w.updater = su.id
+		WHERE w.id=#{id}
+	</select>
+
+	<update id="deleteById" parameterType="long">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),isDeleted=1
+		WHERE id=#{id} and status=1
+	</update>
+
+	<update id="enableOrFreeze">
+		UPDATE
+		<include refid="table_name" />
+		SET updateTime=now(),status=#{status}
+		WHERE id=#{id}
+	</update>
+
+</mapper>

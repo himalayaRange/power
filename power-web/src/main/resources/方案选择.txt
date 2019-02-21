@@ -1,0 +1,4 @@
+Redis 集群方案的选择【http://www.talkwithtrend.com/Question/230779-1405053】
+Twemproxy – Twitter
+Codis – 豌豆荚
+Redis Cluster – 官方3.x

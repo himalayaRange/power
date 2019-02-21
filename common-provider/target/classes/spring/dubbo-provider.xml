@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans  
+       http://www.springframework.org/schema/beans/spring-beans.xsd  
+       http://code.alibabatech.com/schema/dubbo  
+       http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<!-- 提供方应用信息，用于计算依赖关系 -->
+	<dubbo:application name="protocal-dubbo-common-provider" owner="${dubbo.owner}" organization="${dubbo.organization}"/>
+
+	<!-- 使用zookeeper注册中心暴露服务地址 -->
+	<dubbo:registry protocol="${zookeeper.protocol}" client="${zookeeper.client}" address="${zookeeper.address}" check="false" subscribe="false"  register="true"/>
+
+	<!-- 用dubbo协议在20880端口暴露服务 -->
+	<dubbo:protocol name="dubbo" port="${dubbo.port}" contextpath="${dubbo.contextpath}" serialization="hessian2" threadpool="${dubbo.threadpool}" accepts="${dubbo.accepts}" payload="${dubbo.payload}"/>
+	
+	<!-- 当ProtocolConfig和ServiceConfig某属性没有配置时,采用此缺省值 -->
+	<dubbo:provider timeout="10000" threadpool="fixed" threads="100" accepts="1000" />
+	
+	<!-- 集群配置 cluster ：集群方式：可选：failover/failfast/failsafe/failback/forking 参考readme.md ,使用默认的权重和负载均衡策略 random roundrobin leastactive consistenthash -->
+	<!-- 系统管理员服务接口 -->
+	<dubbo:service cluster="failover" retries="2" loadbalance="roundrobin" interface="com.bly.common.interfaces.service.RedisSpringService" ref="redisSpringSupport" protocol="dubbo" version="1.0.0"/>	
+
+</beans>  
